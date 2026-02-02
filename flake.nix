@@ -52,10 +52,12 @@
       lib = import ./lib { inherit inputs vars; };
       systems = [ "x86_64-linux" "aarch64-darwin" ];
       forAllSystems = f:
-        builtins.listToAttrs (map (system: {
-          name = system;
-          value = f system;
-        }) systems);
+        builtins.listToAttrs (map
+          (system: {
+            name = system;
+            value = f system;
+          })
+          systems);
     in
     {
       nixosConfigurations = {
