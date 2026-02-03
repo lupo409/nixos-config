@@ -14,7 +14,7 @@
     ../common/nix-ld.nix
   ];
 
-  boot.kernelPackages = pkgs.linuxKernel.packages.linux_xanmod_latest;
+  boot.kernelPackages = pkgs.linuxPackagesFor pkgs.linuxKernel.kernels.linux_xanmod_latest;
 
   networking.hostName = "Citrus";
 
