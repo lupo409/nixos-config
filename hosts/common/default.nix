@@ -7,5 +7,6 @@
 
   imports = [
     ./security.nix
+    ./nix-ld.nix
   ];
 }

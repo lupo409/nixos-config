@@ -14,6 +14,7 @@ This document provides guidelines for AI agents and automated tools working with
 | `lib/default.nix` | System constructors (`mkNixosSystem` helper) |
 | `hosts/<host>/default.nix` | Host-specific configuration |
 | `hosts/common/*.nix` | Shared host-level configuration |
+| `hosts/<host>/*.nix` | Host-specific slices (boot, locale, users, etc.) |
 | `modules/nixos/*.nix` | Reusable NixOS modules |
 | `home/<user>/default.nix` | Home Manager entry point |
 | `home/<user>/programs/*.nix` | Home Manager modules organized by responsibility |
@@ -27,6 +28,7 @@ This document provides guidelines for AI agents and automated tools working with
 - **Nix formatting**: Align code with `nix fmt` (uses `nixpkgs-fmt`).
 - **No secrets in git**: Never commit `secrets/*.yaml` files.
 - **Avoid host-specific code in shared modules**: Keep `hosts/common/` and `modules/` generic.
+- **Keep host slices small**: Split `hosts/<host>/` by responsibility (boot, users, locale, desktop, nix, packages).
 
 ## CI/CD Pipeline
 
@@ -81,6 +83,10 @@ Edit `home/takahiro/programs/cli-tools.nix` and add the package to the appropria
 
 1. Create `modules/nixos/<module-name>.nix`
 2. Import it in the appropriate host's `default.nix`
+
+### Editing Citrus host config
+
+Prefer adding or editing host slices in `hosts/citrus/` rather than growing `hosts/citrus/default.nix`.
 
 ### Adding a new host
 
