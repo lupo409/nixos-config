@@ -13,4 +13,5 @@ final: prev:
       runHook postInstall
     '';
   };
+  nur = import inputs.nur { inherit final; };
 }
