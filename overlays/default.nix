@@ -13,5 +13,5 @@ final: prev:
       runHook postInstall
     '';
   };
-  nur = import inputs.nur { inherit final; };
+  nur = import inputs.nur { pkgs = final; };
 }
