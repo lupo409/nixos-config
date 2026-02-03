@@ -15,7 +15,7 @@
     };
 
     dankmaterialshell = {
-      url = "github:AvengeMedia/DankMaterialShell";
+      url = "github:AvengeMedia/DankMaterialShell/stable";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -23,22 +23,14 @@
       url = "github:sadjow/claude-code-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
     lanzaboote = {
       url = "github:nix-community/lanzaboote";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    nixos-wsl = {
-      url = "github:nix-community/NixOS-WSL";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     hackgen = {
       url = "github:yuru7/HackGen";
       flake = false;
@@ -61,7 +53,6 @@
     in
     {
       nixosConfigurations = {
-        Yuzu = lib.mkNixosSystem { host = "Yuzu"; };
         Citrus = lib.mkNixosSystem { host = "Citrus"; };
       };
 

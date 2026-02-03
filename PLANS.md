@@ -12,7 +12,6 @@
 ## 1. Project Overview
 
 マルチプラットフォーム対応のNixOS flakes設定:
-- **WSL2**: Yuzu (CUIのみ)
 - **NixOS Native**: Citrus (フルデスクトップ + Wayland Native)
 - **macOS**: Sudachi (nix-darwin + Homebrew)
 
@@ -28,7 +27,6 @@
 
 | Host | Platform | System | Type | Desktop |
 |------|----------|--------|------|---------|
-| Yuzu | WSL2 | x86_64-linux | wsl | none |
 | Citrus | NixOS Native | x86_64-linux | nixos | niri (Wayland) |
 | Sudachi | macOS | aarch64-darwin | darwin | Aqua |
 
@@ -55,10 +53,8 @@ nixos-config/
 │   ├── common/                # ホスト間共通設定
 │   │   ├── default.nix
 │   │   ├── sops.nix           # sops-nixシークレット管理
-│   │   ├── nix-ld.nix         # WSL2用動的リンクサポート (Yuzuのみでimport)
 │   │   └── security.nix       # ファイアウォール、SSH、fail2ban
-│   ├── yuzu/                  # WSL2 - CUIのみ
-│   ├── citrus/                # NixOS - lanzaboote + Wayland Native
+│   ├── citrus/                # NixOS - Wayland Native
 │   └── sudachi/               # macOS - nix-darwin + Homebrew
 ├── modules/
 │   ├── common/                # 全プラットフォーム共通
@@ -67,7 +63,6 @@ nixos-config/
 │   │   ├── git.nix
 │   │   ├── cli-tools.nix      # モダンCLIツール群
 │   │   ├── dev-tools.nix      # Java, Python, deno, ffmpeg
-│   │   └── just.nix           # justタスクランナー
 │   ├── nixos/                 # NixOS固有
 │   │   ├── default.nix
 │   │   ├── niri.nix           # Wayland compositor
@@ -75,7 +70,7 @@ nixos-config/
 │   │   ├── fcitx5.nix         # 日本語入力（Wayland対応）
 │   │   ├── firefox.nix        # Wayland版Firefox
 │   │   ├── dankmaterialshell.nix
-│   │   └── lanzaboote.nix     # Secure Boot
+│   │   └── secure-boot.nix    # Secure Boot (lanzaboote)
 │   └── darwin/                # macOS固有
 │       └── default.nix
 ├── home/
@@ -85,7 +80,6 @@ nixos-config/
 │   └── default.nix            # HackGenフォントオーバーレイ
 ├── pkgs/                      # カスタムパッケージ（必要に応じて）
 ├── .sops.yaml                 # sops-nix設定
-├── justfile                   # justタスクランナー設定
 ├── .env.example               # 環境変数テンプレート
 └── README.md                  # セットアップ手順
 ```
@@ -125,10 +119,6 @@ nixos-config/
     };
     
     # Security & Boot
-    lanzaboote = {
-      url = "github:nix-community/lanzaboote";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     
     sops-nix = {
       url = "github:Mic92/sops-nix";
@@ -365,13 +355,6 @@ nixos-config/
 }
 ```
 
-#### `home/takahiro/programs/just.nix`
-```nix
-{ pkgs, ... }:
-{
-  home.packages = [ pkgs.just ];
-}
-```
 
 ### 6.2 NixOS Modules
 
@@ -448,12 +431,14 @@ nixos-config/
 }
 ```
 
-#### `modules/nixos/lanzaboote.nix`
+#### `modules/nixos/secure-boot.nix`
 ```nix
-{ pkgs, lib, ... }:
+{ inputs, lib, ... }:
 {
+  imports = [ inputs.lanzaboote.nixosModules.lanzaboote ];
+
   boot.loader.systemd-boot.enable = lib.mkForce false;
-  
+
   boot.lanzaboote = {
     enable = true;
     pkiBundle = "/etc/secureboot";
@@ -534,85 +519,54 @@ claude_api_key: ENC[...]
 
 ---
 
-## 7. Justfile Commands
+## 7. Commands
 
-```just
-# Variables
-export FLAKE := justfile_directory()
-export HOSTNAME := env_var_or_default('HOSTNAME', 'Yuzu')
-
+```bash
 # Update flake.lock
-update:
-    nix flake update
+nix flake update
 
-# NixOS rebuild (for Citrus and Yuzu)
-rebuild host=HOSTNAME:
-    sudo nixos-rebuild switch --flake {{FLAKE}}#{{host}}
+# NixOS rebuild (Citrus)
+sudo nixos-rebuild switch --flake .#Citrus
 
-# macOS rebuild (for Sudachi)
-darwin host=HOSTNAME:
-    darwin-rebuild switch --flake {{FLAKE}}#{{host}}
+# Secure Boot (once)
+sudo sbctl create-keys
+sudo sbctl enroll-keys --microsoft
+sudo sbctl verify
+
+# macOS rebuild (Sudachi)
+darwin-rebuild switch --flake .#Sudachi
 
 # Lint and check
-check:
-    nix flake check
-    @echo "Flake check passed!"
+nix flake check
 
 # Format all nix files
-fmt:
-    nix fmt
+nix fmt
 
 # Edit secrets (using sops with age)
-edit-secrets file="secrets/api-keys.yaml":
-    sops {{file}}
+sops secrets/api-keys.yaml
 
 # Initialize age key for sops
-init-age:
-    mkdir -p ~/.config/sops/age
-    age-keygen -o ~/.config/sops/age/keys.txt
-    @echo "Age key generated! Add the public key to .sops.yaml"
-    age-keygen -y ~/.config/sops/age/keys.txt
+mkdir -p ~/.config/sops/age
+age-keygen -o ~/.config/sops/age/keys.txt
+age-keygen -y ~/.config/sops/age/keys.txt
 
 # Garbage collection
-clean:
-    sudo nix-collect-garbage -d
-    nix store optimise
+sudo nix-collect-garbage -d
+nix store optimise
 
 # Show system info
-info:
-    nix-shell -p fastfetch --run fastfetch
+nix-shell -p fastfetch --run fastfetch
 
 # Test VM (NixOS only)
-test-vm host="Citrus":
-    nixos-rebuild build-vm --flake {{FLAKE}}#{{host}}
-    @echo "VM built! Run result/bin/run-{{host}}-vm to start"
+nixos-rebuild build-vm --flake .#Citrus
+echo "VM built! Run result/bin/run-Citrus-vm to start"
 ```
 
 ---
 
 ## 8. Host-Specific Configurations
 
-### 8.1 Yuzu (WSL2)
-
-```nix
-{ pkgs, ... }:
-{
-  # ホスト名設定
-  networking.hostName = "Yuzu";
-  
-  # WSL2固有設定
-  wsl.enable = true;
-  wsl.defaultUser = "takahiro";
-  
-  # nix-ld有効化（動的リンクバイナリ対応）
-  imports = [ ../common/nix-ld.nix ];
-  
-  # GUIアプリはインストールしない（CUIのみ）
-  # home-managerで共通CLIツールのみインストール
-}
-```
-
-### 8.2 Citrus (NixOS + Wayland)
+### 8.1 Citrus (NixOS + Wayland)
 
 ```nix
 { pkgs, lib, ... }:
@@ -621,7 +575,7 @@ test-vm host="Citrus":
   networking.hostName = "Citrus";
   
   # Boot
-  imports = [ ./lanzaboote.nix ];
+  imports = [ ./secure-boot.nix ];
   
   # Desktop
   programs.niri.enable = true;
@@ -705,30 +659,26 @@ test-vm host="Citrus":
 - [ ] home/takahiro/programs/git.nix
 - [ ] home/takahiro/programs/cli-tools.nix
 - [ ] home/takahiro/programs/dev-tools.nix
-- [ ] home/takahiro/programs/just.nix
 - [ ] home/takahiro/default.nix (main home-manager config)
 
 ### Phase 3: NixOS Modules
 - [ ] hosts/common/security.nix
 - [ ] hosts/common/sops.nix
-- [ ] hosts/common/nix-ld.nix
 - [ ] modules/nixos/niri.nix
 - [ ] modules/nixos/wayland.nix
 - [ ] modules/nixos/fcitx5.nix
-- [ ] modules/nixos/lanzaboote.nix
+- [ ] modules/nixos/secure-boot.nix
 
 ### Phase 4: macOS Modules
 - [ ] modules/darwin/default.nix
 - [ ] modules/darwin/homebrew.nix
 
 ### Phase 5: Host Configurations
-- [ ] hosts/Yuzu/default.nix (WSL2)
 - [ ] hosts/Citrus/default.nix (NixOS)
 - [ ] hosts/Sudachi/default.nix (macOS)
 - [ ] hosts/Citrus/hardware-configuration.nix
 
 ### Phase 6: Configuration Files
-- [ ] justfile
 - [ ] .sops.yaml
 - [ ] secrets/api-keys.yaml.example
 - [ ] .gitignore
@@ -745,13 +695,12 @@ test-vm host="Citrus":
 - [ ] Set up Secure Boot keys for Citrus (lanzaboote)
 
 ### Phase 9: Testing & Validation
-- [ ] Test WSL2 (Yuzu) build
 - [ ] Test NixOS (Citrus) build
 - [ ] Test macOS (Sudachi) build
 - [ ] Test NixOS VM with GitHub Actions
 - [ ] Verify sops-nix encryption/decryption
 - [ ] Verify all home-manager programs
-- [ ] Test justfile commands
+- [ ] Verify Secure Boot enrollment on Citrus
 
 ---
 
@@ -759,7 +708,7 @@ test-vm host="Citrus":
 
 ### Initial Setup
 
-#### 1. Install NixOS / WSL2 / macOS Base System
+#### 1. Install NixOS / macOS Base System
 
 #### 2. Clone Repository
 ```bash
@@ -773,7 +722,9 @@ cd nixos-config
 nix-shell -p age
 
 # Generate age key
-just init-age
+mkdir -p ~/.config/sops/age
+age-keygen -o ~/.config/sops/age/keys.txt
+age-keygen -y ~/.config/sops/age/keys.txt
 
 # Copy the public key output and add it to .sops.yaml
 ```
@@ -784,7 +735,7 @@ just init-age
 cp secrets/api-keys.yaml.example secrets/api-keys.yaml
 
 # Edit with sops (requires age key setup)
-just edit-secrets
+sops secrets/api-keys.yaml
 
 # Add your API keys:
 # opencode_api_key: your-key-here
@@ -809,41 +760,38 @@ sudo sbctl verify
 
 #### 7. Build Configuration
 ```bash
-# For Yuzu (WSL2)
-just rebuild Yuzu
-
 # For Citrus (NixOS)
-just rebuild Citrus
+sudo nixos-rebuild switch --flake .#Citrus
 
 # For Sudachi (macOS)
-just darwin Sudachi
+darwin-rebuild switch --flake .#Sudachi
 ```
 
 ### Daily Usage
 
 #### Update System
 ```bash
-just update      # Update flake.lock
-just rebuild     # Rebuild current host (auto-detected)
+nix flake update      # Update flake.lock
+sudo nixos-rebuild switch --flake .#Citrus
 ```
 
 #### Manage Secrets
 ```bash
-just edit-secrets              # Edit default secrets file
-just edit-secrets secrets/ssh-keys.yaml  # Edit specific file
+sops secrets/api-keys.yaml              # Edit default secrets file
+sops secrets/ssh-keys.yaml  # Edit specific file
 ```
 
 #### System Maintenance
 ```bash
-just clean       # Garbage collection and store optimization
-just check       # Validate flake configuration
-just fmt         # Format all nix files
-just info        # Show system information
+sudo nix-collect-garbage -d       # Garbage collection and store optimization
+nix flake check       # Validate flake configuration
+nix fmt         # Format all nix files
+nix-shell -p fastfetch --run fastfetch        # Show system information
 ```
 
 #### Testing (Development)
 ```bash
-just test-vm Citrus   # Build and test NixOS VM
+nixos-rebuild build-vm --flake .#Citrus   # Build and test NixOS VM
 ```
 
 ### Troubleshooting
@@ -863,7 +811,7 @@ sops updatekeys secrets/api-keys.yaml
 #### NixOS VM Testing
 ```bash
 # Build VM
-just test-vm Citrus
+nixos-rebuild build-vm --flake .#Citrus
 
 # Run VM (requires KVM)
 ./result/bin/run-Citrus-vm
@@ -960,25 +908,6 @@ jobs:
           timeout 60s ./result/bin/run-Citrus-vm -nographic -m 2048 || [ $? -eq 124 ]
           echo "VM boot test completed"
   
-  test-yuzu:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Nix
-        uses: cachix/install-nix-action@v26
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-      
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v14
-        with:
-          name: nix-community
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      
-      - name: Build Yuzu Configuration
-        run: |
-          nix build .#nixosConfigurations.Yuzu.config.system.build.toplevel
 ```
 
 ### `.github/workflows/build-darwin.yml` - macOS Build Check
@@ -1017,7 +946,6 @@ jobs:
 - ✅ Automatic flake validation on push/PR
 - ✅ Format checking with `nix fmt`
 - ✅ NixOS VM boot testing
-- ✅ WSL2 configuration build testing
 - ✅ macOS configuration build testing (on macOS runner)
 - ✅ Cachix integration for faster builds
 - ✅ Parallel job execution for each host
@@ -1061,7 +989,6 @@ Add to GitHub repository secrets:
 - **sops-nix**: Age-based secret encryption (GPGからAgeに変更)
 - **lanzaboote**: Secure Boot support for NixOS
 - **fail2ban**: SSH brute-force protection
-- **nix-ld**: Foreign binary support for WSL2
 
 ### DankMaterialShell Integration
 DankMaterialShellはniriのstatusバーとして機能します:
@@ -1070,7 +997,6 @@ DankMaterialShellはniriのstatusバーとして機能します:
 3. niri設定(`~/.config/niri/config.kdl`)で `spawn-at-startup` に設定
 
 ### Host Naming Convention
-- **Yuzu**: 柚子 - WSL2 (軽量CUI環境)
 - **Citrus**: シトラス - NixOS Native (フルデスクトップ環境)
 - **Sudachi**: スダチ - macOS (日本の柑橘類で統一)
 
@@ -1087,7 +1013,6 @@ GitHub Push/PR
 ┌───────────────────────────────────┐
 │  NixOS VM Tests (Ubuntu + KVM)    │
 │  - Build Citrus VM                │
-│  - Build Yuzu config              │
 │  - Test VM boot                   │
 └───────────────────────────────────┘
     ↓
@@ -1133,7 +1058,7 @@ GitHub Push/PR
 2. ❌ GPG for sops → ✅ Age for sops (simpler, no keyserver needed)
 3. ❌ `graalvm-oracle` → ✅ `graalvm-ce` (licensing)
 4. ❌ Mixed system/home packages → ✅ Prioritize home-manager modules
-5. ❌ hostname auto-detection → ✅ Explicit host names (Yuzu/Citrus/Sudachi)
+5. ❌ hostname auto-detection → ✅ Explicit host names (Citrus/Sudachi)
 6. ❌ `nixpkgs-fmt` → ✅ `nix fmt` (built-in)
 7. ❌ Manual testing → ✅ GitHub Actions CI/CD + VM tests
 

@@ -2,14 +2,12 @@
 
 Multi-platform Nix flake configuration for:
 
-- Yuzu (WSL2, NixOS-WSL)
 - Citrus (NixOS)
 - Sudachi (macOS, nix-darwin)
 
 ## Requirements
 
 - Nix with flakes enabled
-- `just` (optional but recommended)
 
 ## Quick Start
 
@@ -24,20 +22,16 @@ This repo uses `sops-nix` for secrets. You need an Age key and an encrypted
 `secrets/api-keys.yaml` file.
 
 ```bash
-just init-age
+mkdir -p ~/.config/sops/age
+age-keygen -o ~/.config/sops/age/keys.txt
+age-keygen -y ~/.config/sops/age/keys.txt
 cp secrets/api-keys.yaml.example secrets/api-keys.yaml
-just edit-secrets
+sops secrets/api-keys.yaml
 ```
 
 Then add your Age public key to `.sops.yaml` and re-encrypt if needed.
 
 ## Host builds
-
-### Yuzu (WSL2)
-
-```bash
-just rebuild Yuzu
-```
 
 ### Citrus (NixOS)
 
@@ -50,20 +44,25 @@ sudo nixos-generate-config --show-hardware-config > hosts/citrus/hardware-config
 Then build:
 
 ```bash
-just rebuild Citrus
+sudo nixos-rebuild switch --flake .#Citrus
+
+# Secure Boot (once)
+sudo sbctl create-keys
+sudo sbctl enroll-keys --microsoft
+sudo sbctl verify
 ```
 
 ### Sudachi (macOS)
 
 ```bash
-just darwin Sudachi
+darwin-rebuild switch --flake .#Sudachi
 ```
 
 ## Common maintenance
 
 ```bash
-just fmt
-just check
+nix fmt
+nix flake check
 ```
 
 ## GitHub Actions

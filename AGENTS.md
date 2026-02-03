@@ -10,7 +10,6 @@
 
 This repo manages three hosts with a single flake:
 
-- **Yuzu** (WSL2, NixOS-WSL)
 - **Citrus** (NixOS)
 - **Sudachi** (macOS, nix-darwin)
 
@@ -21,7 +20,7 @@ Key paths:
 - `lib/default.nix`: helper constructors for NixOS/Darwin
 - `hosts/<host>/default.nix`: host-specific config
 - `home/takahiro/*`: Home Manager modules
-- `modules/nixos/*`: NixOS modules (wayland, fcitx5, niri, lanzaboote)
+- `modules/nixos/*`: NixOS modules (wayland, fcitx5, niri, secure-boot)
 - `modules/darwin/default.nix`: Darwin base settings
 - `overlays/default.nix`: custom overlays (HackGen font)
 - `.github/workflows/*`: CI workflows
@@ -77,9 +76,11 @@ Paths:
 Setup (local):
 
 ```bash
-just init-age
+mkdir -p ~/.config/sops/age
+age-keygen -o ~/.config/sops/age/keys.txt
+age-keygen -y ~/.config/sops/age/keys.txt
 cp secrets/api-keys.yaml.example secrets/api-keys.yaml
-just edit-secrets
+sops secrets/api-keys.yaml
 ```
 
 ---
@@ -95,7 +96,7 @@ opencode "Add ripgrep via home-manager in cli-tools.nix and rebuild Citrus"
 ### 5.2 Add a host
 
 ```bash
-opencode "Add a new NixOS host 'Mikan' based on Yuzu and update flake outputs"
+opencode "Add a new NixOS host 'Mikan' based on Citrus and update flake outputs"
 ```
 
 ### 5.3 Debug build errors
@@ -111,7 +112,7 @@ opencode "Nix build failed with: <error>. Find the cause and fix it."
 Workflows:
 
 - `check.yml`: `nix flake check` + `nix fmt -- --check .`
-- `test-vm.yml`: Citrus VM build + Yuzu build
+- `test-vm.yml`: Citrus VM build
 - `build-darwin.yml`: macOS build for Sudachi
 - `flake-maintenance.yml`: weekly lock + home.stateVersion update
 
@@ -128,7 +129,7 @@ Formatting:
 Validation:
 
 - `nix flake check` for general verification.
-- Use `just rebuild <host>` or `just darwin <host>` for host builds.
+- Use `sudo nixos-rebuild switch --flake .#<host>` or `darwin-rebuild switch --flake .#<host>` for host builds.
 
 ---
 

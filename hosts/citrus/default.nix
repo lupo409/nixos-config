@@ -3,11 +3,13 @@
   imports = [
     ../common/default.nix
     inputs.home-manager.nixosModules.home-manager
+    inputs.dankmaterialshell.nixosModules.dank-material-shell
     ./hardware-configuration.nix
-    ../../modules/nixos/lanzaboote.nix
+    ../../modules/nixos/secure-boot.nix
     ../../modules/nixos/niri.nix
     ../../modules/nixos/wayland.nix
     ../../modules/nixos/fcitx5.nix
+    ../common/nix-ld.nix
   ];
 
   networking.hostName = "Citrus";
@@ -18,6 +20,21 @@
   };
 
   programs.zsh.enable = true;
+
+  programs.dank-material-shell = {
+    enable = true;
+    systemd = {
+      enable = true;
+      restartIfChanged = true;
+    };
+    enableSystemMonitoring = true;
+    enableVPN = true;
+    enableDynamicTheming = true;
+    enableAudioWavelength = true;
+    enableCalendarEvents = true;
+    enableClipboardPaste = true;
+    package = inputs.dankmaterialshell.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  };
 
   home-manager = {
     useGlobalPkgs = true;
