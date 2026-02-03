@@ -10,6 +10,7 @@
     ../../modules/nixos/wayland.nix
     ../../modules/nixos/fcitx5.nix
     ../../modules/nixos/nvidia.nix
+    ../../modules/nixos/pipewire.nix
     ../common/nix-ld.nix
   ];
 
