@@ -28,7 +28,6 @@
       restartIfChanged = true;
     };
     enableSystemMonitoring = true;
-    enableClipboard = true;
     enableVPN = true;
     enableDynamicTheming = true;
     enableAudioWavelength = true;
