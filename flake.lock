@@ -94,6 +94,7 @@
     "gitignore": {
       "inputs": {
         "nixpkgs": [
+          "lanzaboote",
           "pre-commit",
           "nixpkgs"
         ]
@@ -212,7 +213,8 @@
         "flake-compat": "flake-compat",
         "gitignore": "gitignore",
         "nixpkgs": [
-        "nixpkgs"
+          "lanzaboote",
+          "nixpkgs"
         ]
       },
       "locked": {
@@ -266,7 +268,8 @@
     "rust-overlay": {
       "inputs": {
         "nixpkgs": [
-        "nixpkgs"
+          "lanzaboote",
+          "nixpkgs"
         ]
       },
       "locked": {
