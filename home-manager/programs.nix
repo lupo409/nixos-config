@@ -416,13 +416,14 @@ in
     text = ''
       font-family = "HackGen Console NF"
       font-size = 12
-      theme = "Gruvbox Dark"
+      theme = dankcolors
       scrollback-limit = 10000
       cursor-style = "block"
       cursor-blink = true
       window-padding-x = 8
       window-padding-y = 8
       confirm-close-surface = false
+      app-notifications = "no-clipboard-copy,no-config-reload"
     '';
     force = true;
   };
