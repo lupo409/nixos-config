@@ -1,18 +1,37 @@
 # nixos-config
 
-NixOS向けのflake構成リポジトリです。現在の対象ホストはCitrusのみです。
+NixOS (Citrus) を前提とした flake 構成リポジトリです。実行・検証は NixOS 上で行います。
 
 ## 構成概要
-- `flake.nix` / `flake.lock` で入力と出力を管理
-- `vars/default.nix` にユーザー・ホスト情報を集約
-- `hosts/<host>/` にホストごとの設定を分割
-- `hosts/common/` に共有設定を集約
-- `modules/nixos/` に再利用可能なNixOSモジュールを配置
-- `home/<user>/` にHome Manager構成を配置
+- `flake/` 出力の分割 (nixosConfigurations, packages, formatter)
+- `vars/default.nix` ユーザー/ホスト情報
+- `hosts/<host>/` ホスト別設定 (system/desktop)
+- `hosts/common/` 共有設定 (security, overlays, nix-ld)
+- `modules/nixos/` 再利用可能なモジュール
+- `home-manager/` Home Manager 構成 (home, packages, programs)
+- `secrets/` 秘密情報の例 (実データは置かない)
 
 ## 前提
-- Nix (flakes有効)
-- NixOSホストでは `nixos-rebuild` が使えること
+- NixOS (flakes 有効)
+- `nixos-rebuild` が使えること
+
+## 運用フロー (必須)
+Nix ファイルを書き換えたあとは毎回、以下を実行して確認します。
+
+```bash
+nix fmt
+nix flake check
+```
+
+編集を終わらせる前に、エラーがないかどうかの確認として以下を実行します。
+`nix flake update` は `flake.lock` を更新するため、変更が出た場合は内容を確認してください。
+
+```bash
+nix flake update
+sudo nixos-rebuild switch --flake .#Citrus
+```
+
+エラーが出た場合は修正し、同じ手順を再実行します。
 
 ## 使い始め
 ```bash
@@ -56,11 +75,41 @@ sudo sbctl enroll-keys --microsoft
 sudo sbctl verify
 ```
 
-## メンテナンス
+## Secrets (sops)
+SOPS の秘密情報は `secrets/secrets.yaml` に保存し、Git には `secrets/secrets.yaml.example` のみを置きます。`secrets/secrets.yaml` はコミットしません。
+
+### 初期セットアップ
 ```bash
-nix fmt
-nix flake check
+sudo mkdir -p /etc/sops/age
+sudo age-keygen -o /etc/sops/age/keys.txt
+export SOPS_AGE_KEY_FILE=/etc/sops/age/keys.txt
+
+cp secrets/secrets.yaml.example secrets/secrets.yaml
+sops --encrypt --in-place secrets/secrets.yaml
 ```
 
+既に `secrets/secrets.yaml` が平文の場合は、いったん削除して作り直してください。
+
+### 使い方
+```bash
+# 復号して確認
+sops --decrypt secrets/secrets.yaml
+
+# 編集
+sops secrets/secrets.yaml
+
+# 初回: exampleから複製して暗号化
+cp secrets/secrets.yaml.example secrets/secrets.yaml
+sops --encrypt --in-place secrets/secrets.yaml
+
+# 必要な値だけ上書き
+sops --decrypt secrets/secrets.yaml | \
+  jq '.github.token="<token>" | .tailscale.authkey="<authkey>"' | \
+  sops --encrypt --output secrets/secrets.yaml /dev/stdin
+```
+
+### Tailscale 自動認証
+`modules/nixos/tailscale.nix` で `tailscale up --authkey=...` を SOPS の secret から実行します。
+
 ## CI
-Push時に GitHub Actions が `nix flake check` とVMテストを実行します。
+Push 時に GitHub Actions が `nix flake check` と VM テストを実行します。
