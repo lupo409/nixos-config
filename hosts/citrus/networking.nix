@@ -56,7 +56,7 @@
             };
             wifi = {
               mode = "ap";
-              ssid = "Citrus-AX";
+              ssid = "TPLink-8732";
               band = "a";
               channel = 36;
               powersave = 2;

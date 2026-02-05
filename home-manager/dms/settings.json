@@ -163,7 +163,7 @@
       "cursorHideTimeout": 0
     }
   },
-  "launcherLogoMode": "dank",
+  "launcherLogoMode": "os",
   "launcherLogoCustomPath": "",
   "launcherLogoColorOverride": "",
   "launcherLogoColorInvertOnMode": false,
@@ -208,8 +208,8 @@
   "bluetoothDevicePins": {},
   "audioInputDevicePins": {},
   "audioOutputDevicePins": {},
-  "gtkThemingEnabled": false,
-  "qtThemingEnabled": false,
+  "gtkThemingEnabled": true,
+  "qtThemingEnabled": true,
   "syncModeWithPortal": true,
   "terminalsAlwaysDark": false,
   "runDmsMatugenTemplates": true,
