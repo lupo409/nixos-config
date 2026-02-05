@@ -1,13 +1,10 @@
-{ inputs, lib, pkgs, vars, ... }:
-let
-  secretsFile = ../../secrets/secrets.yaml;
-  hasSecrets = builtins.pathExists secretsFile;
-in
+{ inputs, pkgs, vars, ... }:
 {
   imports = [ inputs.sops-nix.nixosModules.sops ];
 
-  sops = lib.mkIf hasSecrets {
-    defaultSopsFile = secretsFile;
+  sops = {
+    defaultSopsFile = "/etc/nixos/secrets.yaml";
+    validateSopsFiles = false;
     age = {
       keyFile = "/etc/sops/age/keys.txt";
       generateKey = true;
@@ -16,13 +13,6 @@ in
     secrets."github/token".owner = vars.username;
     secrets."tailscale/authkey".owner = vars.username;
   };
-
-  assertions = [
-    {
-      assertion = hasSecrets;
-      message = "Missing secrets file: secrets/secrets.yaml. Copy secrets/secrets.yaml.example and encrypt with sops.";
-    }
-  ];
 
   environment.systemPackages = with pkgs; [
     sops

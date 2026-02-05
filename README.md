@@ -76,7 +76,7 @@ sudo sbctl verify
 ```
 
 ## Secrets (sops)
-SOPS の秘密情報は `secrets/secrets.yaml` に保存し、Git には `secrets/secrets.yaml.example` のみを置きます。`secrets/secrets.yaml` はコミットしません。
+SOPS の秘密情報は `/etc/nixos/secrets.yaml` に保存し、Git には `secrets/secrets.yaml.example` のみを置きます。
 
 ### 初期セットアップ
 ```bash
@@ -84,28 +84,28 @@ sudo mkdir -p /etc/sops/age
 sudo age-keygen -o /etc/sops/age/keys.txt
 export SOPS_AGE_KEY_FILE=/etc/sops/age/keys.txt
 
-cp secrets/secrets.yaml.example secrets/secrets.yaml
-sops --encrypt --in-place secrets/secrets.yaml
+sudo cp secrets/secrets.yaml.example /etc/nixos/secrets.yaml
+sudo sops --encrypt --in-place /etc/nixos/secrets.yaml
 ```
 
-既に `secrets/secrets.yaml` が平文の場合は、いったん削除して作り直してください。
+既に `/etc/nixos/secrets.yaml` が平文の場合は、いったん削除して作り直してください。
 
 ### 使い方
 ```bash
 # 復号して確認
-sops --decrypt secrets/secrets.yaml
+sops --decrypt /etc/nixos/secrets.yaml
 
 # 編集
-sops secrets/secrets.yaml
+sops /etc/nixos/secrets.yaml
 
 # 初回: exampleから複製して暗号化
-cp secrets/secrets.yaml.example secrets/secrets.yaml
-sops --encrypt --in-place secrets/secrets.yaml
+sudo cp secrets/secrets.yaml.example /etc/nixos/secrets.yaml
+sudo sops --encrypt --in-place /etc/nixos/secrets.yaml
 
 # 必要な値だけ上書き
-sops --decrypt secrets/secrets.yaml | \
+sops --decrypt /etc/nixos/secrets.yaml | \
   jq '.github.token="<token>" | .tailscale.authkey="<authkey>"' | \
-  sops --encrypt --output secrets/secrets.yaml /dev/stdin
+  sudo sops --encrypt --output /etc/nixos/secrets.yaml /dev/stdin
 ```
 
 ### Tailscale 自動認証
