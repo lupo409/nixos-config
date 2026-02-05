@@ -9,7 +9,6 @@
 
   nixpkgs.overlays = [
     inputs.nur.overlays.default
-    (final: _prev: {
-    })
+    (final: _prev: { })
   ];
 }
