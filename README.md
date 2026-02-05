@@ -152,3 +152,5 @@ sops --decrypt /etc/nixos/secrets.yaml | \
 
 ## CI
 Push 時に GitHub Actions が `nix flake check` と VM テストを実行します。
+
+
