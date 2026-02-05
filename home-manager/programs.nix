@@ -1,7 +1,6 @@
 { config, lib, pkgs, vars, ... }:
 let
   addons = pkgs.nur.repos.rycee.firefox-addons;
-  ublockFilters = lib.splitString "\n" (builtins.readFile ./ublock/jpf-plus.txt);
   dmsWeatherCoordinates = "__DMS_WEATHER_COORDINATES__";
   chromiumExec = lib.getExe pkgs.chromium;
   firefoxToolbarState = builtins.toJSON {
@@ -247,6 +246,7 @@ in
         grep = "rg";
         fgrep = "rg";
         egrep = "rg";
+        nix-shell = "nix-shell --command zsh";
         ".." = "cd ..";
         "..." = "cd ../..";
         la = "eza -la";
@@ -276,7 +276,7 @@ in
       settings = {
         format = lib.concatStrings [
           "[░▒▓](#a3aed2)"
-          "[  ](bg:#a3aed2 fg:#090c0c)"
+          "[  ](bg:#a3aed2 fg:#090c0c)"
           "[](bg:#769ff0 fg:#a3aed2)"
           "$directory"
           "[](fg:#769ff0 bg:#394260)"

@@ -27,6 +27,20 @@ in
     trusted-public-keys = [ "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=" ];
   };
 
+  nix.extraOptions = ''
+    !include /run/secrets/nix-access-tokens.conf
+  '';
+
+  sops.templates.nix_access_tokens = {
+    path = "/run/secrets/nix-access-tokens.conf";
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    content = ''
+      access-tokens = github.com=${config.sops.placeholder."github/token"}
+    '';
+  };
+
   users.users.${vars.username} = {
     isNormalUser = true;
     home = vars.homeDirectory;

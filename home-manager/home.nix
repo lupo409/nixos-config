@@ -24,10 +24,6 @@
   };
 
 
-  home.activation.removeOpencode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    rm -rf "${config.xdg.configHome}/opencode"
-  '';
-
   home.activation.dmsWeatherCoordinates = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     coords_file="/run/secrets/dms/weather_coordinates"
     settings_file="${config.xdg.configHome}/DankMaterialShell/settings.json"

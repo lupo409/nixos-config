@@ -8,10 +8,12 @@
     obs-studio
     prismlauncher
     mpv
+    wpsoffice
     dust
     nano
     tree
     jq
+    opencode
     yq-go
     unzip
     zip
