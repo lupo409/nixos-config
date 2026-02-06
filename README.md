@@ -48,7 +48,7 @@ sudo sbctl verify
 ```
 
 ## Secrets (sops)
-SOPS の秘密情報は ./nixos/secrets.yaml` に保存し、Git には `secrets/secrets.yaml.example` のみを置きます。
+SOPS の秘密情報は secrets/secrets.yaml` に保存し、Git には `secrets/secrets.yaml.example` のみを置きます。
 
 ### 初期セットアップ
 ```bash
@@ -56,8 +56,8 @@ sudo mkdir -p /etc/sops/age
 sudo age-keygen -o /etc/sops/age/keys.txt
 export SOPS_AGE_KEY_FILE=/etc/sops/age/keys.txt
 
-sudo cp secrets/secrets.yaml.example ./secrets/secrets.yaml
-sudo sops --encrypt --in-place ./secrets/secrets.yaml
+sudo cp secrets/secrets.yaml.example secrets/secrets.yaml
+sudo sops --encrypt --in-place secrets/secrets.yaml
 ```
 
 ### 新規マシンのセットアップ手順
@@ -70,13 +70,13 @@ sudo sops --encrypt --in-place ./secrets/secrets.yaml
 
 2. **例ファイルの配置 → 暗号化**
    ```bash
-   sudo cp secrets/secrets.yaml.example ./secrets/secrets.yaml
-   sudo sops --encrypt --in-place ./secrets/secrets.yaml
+   sudo cp secrets/secrets.yaml.example secrets/secrets.yaml
+   sudo sops --encrypt --in-place secrets/secrets.yaml
    ```
 
 3. **必要項目を入力**
    ```bash
-   sops ./secrets/secrets.yaml
+   sops secrets/secrets.yaml
    ```
 
 4. **ユーザーパスワード**
@@ -92,10 +92,10 @@ sudo sops --encrypt --in-place ./secrets/secrets.yaml
 ### 使い方
 ```bash
 # 復号して確認
-sops --decrypt ./secrets/secrets.yaml
+sops --decrypt secrets/secrets.yaml
 
 # 編集
-sops edit ./secrets/secrets.yaml
+sops edit secrets/secrets.yaml
 
 ## CI
 Push 時に GitHub Actions が `nix flake check` と VM テストを実行します。
