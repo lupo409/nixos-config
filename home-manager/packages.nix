@@ -1,9 +1,6 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    (discord.override { withOpenASAR = true; })
-    (discord-ptb.override { withOpenASAR = true; })
-    (discord-canary.override { withOpenASAR = true; })
     bitwarden-desktop
     obs-studio
     prismlauncher

@@ -73,6 +73,9 @@ in
   environment.systemPackages = with pkgs; [
     dgop
     papirus-icon-theme
+    (discord.override { withOpenASAR = true; })
+    (discord-ptb.override { withOpenASAR = true; })
+    (discord-canary.override { withOpenASAR = true; })
   ];
 
   fonts.packages = with pkgs; [
