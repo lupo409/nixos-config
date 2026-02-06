@@ -3,6 +3,14 @@ let
   addons = pkgs.nur.repos.rycee.firefox-addons;
   dmsWeatherCoordinates = "__DMS_WEATHER_COORDINATES__";
   chromiumExec = lib.getExe pkgs.chromium;
+  scyroxFavicon = pkgs.fetchurl {
+    url = "https://www.scyrox.net/favicon.ico";
+    hash = "sha256-iiY4AWxpUlTxZHol52MJi0Io09tQtl4BuHmdb0Vkpv8=";
+  };
+  xsydConnectFavicon = pkgs.fetchurl {
+    url = "https://v2.xsyd.top/favicon.ico";
+    hash = "sha256-pFe0622zPDE1yxNzglIsDBQI/RDphXTET3hJ1PZn+Do=";
+  };
   firefoxToolbarState = builtins.toJSON {
     placements = {
       "nav-bar" = [
@@ -386,7 +394,7 @@ in
       name = "Scyrox";
       comment = "Scyrox web app";
       exec = "${chromiumExec} --app=https://www.scyrox.net/ --class=Scyrox";
-      icon = "chromium";
+      icon = "${scyroxFavicon}";
       terminal = false;
       categories = [ "Network" "WebBrowser" ];
     };
@@ -394,7 +402,7 @@ in
       name = "XSYD Connect";
       comment = "XSYD Connect web app";
       exec = "${chromiumExec} --app=https://v2.xsyd.top/connect --class=XSYDConnect";
-      icon = "chromium";
+      icon = "${xsydConnectFavicon}";
       terminal = false;
       categories = [ "Network" "WebBrowser" ];
     };
@@ -405,14 +413,15 @@ in
       font-family = "HackGen Console NF"
       font-size = 12
       theme = dankcolors
+      window-decoration = none
       scrollback-limit = 10000
       cursor-style = "block"
-      cursor-blink = true
+      cursor-style-blink = true
       window-padding-x = 8
       window-padding-y = 8
       confirm-close-surface = false
       app-notifications = "no-clipboard-copy,no-config-reload"
-      tab-bar = "hide"
+      gtk-tabs-location = "hidden"
     '';
     force = true;
   };
@@ -439,5 +448,7 @@ in
   xdg.configFile."fcitx5/conf/classicui.conf".text = ''
     [General]
     Theme=FluentDark-solid
+    UseDarkTheme=True
+    UseAccentColor=True
   '';
 }

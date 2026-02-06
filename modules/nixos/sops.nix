@@ -10,16 +10,14 @@
       generateKey = true;
     };
 
-    # githubとtailscaleはsopsを使わない
-    # secrets."github/token".owner = vars.username;
-    # secrets."tailscale/authkey".owner = vars.username;
     secrets."dms/weather_coordinates" = {
       owner = vars.username;
+      mode = "0400";
     };
-    secrets."user/username" = { };
     secrets."user/hashedPassword" = {
       owner = "root";
       mode = "0400";
+      neededForUsers = true;
     };
   };
 

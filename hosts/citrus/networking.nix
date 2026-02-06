@@ -17,7 +17,7 @@
     usePredictableInterfaceNames = false;
 
     firewall = {
-      trustedInterfaces = [ "ap0" ];
+      trustedInterfaces = [ "wlan0" ];
       allowedUDPPorts = [ 53 67 68 ];
     };
 
@@ -31,22 +31,6 @@
       ensureProfiles = {
         environmentFiles = [ config.sops.templates.networkmanager_env.path ];
         profiles = {
-          eth0 = {
-            connection = {
-              id = "eth0_conf";
-              type = "ethernet";
-              interface-name = "eth0";
-            };
-            ethernet = { };
-            ipv4 = {
-              method = "auto";
-            };
-            ipv6 = {
-              addr-gen-mode = "default";
-              method = "auto";
-            };
-            proxy = { };
-          };
           ap0 = {
             connection = {
               id = "ap0";
@@ -64,6 +48,9 @@
             wifi-security = {
               key-mgmt = "wpa-psk";
               psk = "$AP0_PSK";
+              proto = "rsn";
+              pairwise = "ccmp";
+              group = "ccmp";
             };
             ipv4 = {
               method = "shared";

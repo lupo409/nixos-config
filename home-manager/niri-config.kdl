@@ -21,12 +21,7 @@ input {
     }
 }
 
-// Output configuration
-output "DP-1" {
-    mode "3440x1440@240"
-    scale 1
-    position x=0 y=0
-}
+// Output configuration is managed via dms/outputs.kdl
 
 layout {
     gaps 16
@@ -158,12 +153,9 @@ binds {
     Mod+Shift+Minus { set-window-height "-10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
 
-    Mod+V { spawn "dms" "ipc" "call" "clipboard" "toggle"; }
     Mod+Shift+V { switch-focus-between-floating-and-tiling; }
 
     Mod+W { toggle-column-tabbed-display; }
-
-    Mod+Space { spawn "dms" "ipc" "call" "spotlight" "toggle"; }
 
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
@@ -177,4 +169,10 @@ binds {
     Mod+Shift+P { power-off-monitors; }
 }
 
+include "dms/binds.kdl"
+include "dms/outputs.kdl"
+include "dms/layout.kdl"
+include "dms/colors.kdl"
+include "dms/alttab.kdl"
 include "dms/cursor.kdl"
+include "dms/wpblur.kdl"

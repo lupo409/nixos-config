@@ -15,7 +15,10 @@
     enableCalendarEvents = true;
     enableClipboardPaste = true;
     quickshell.package = inputs.dankmaterialshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
-    plugins = { };
+    plugins = {
+      nixMonitor.enable = true;
+      tailscale.enable = true;
+    };
   };
 
   services.displayManager.dms-greeter = {

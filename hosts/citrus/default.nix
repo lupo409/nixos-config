@@ -4,17 +4,20 @@
     ../common/default.nix
     inputs.home-manager.nixosModules.home-manager
     inputs.dankmaterialshell.nixosModules.dank-material-shell
+    inputs.dms-plugin-registry.modules.default
     ./hardware-configuration.nix
-    # ../../modules/nixos/secure-boot.nix
+    ../../modules/nixos/secure-boot.nix
     ../../modules/nixos/niri.nix
     ../../modules/nixos/wayland.nix
     ../../modules/nixos/fcitx5.nix
     ../../modules/nixos/nvidia.nix
     ../../modules/nixos/pipewire.nix
+    ../../modules/nixos/gaming.nix
+    ../../modules/nixos/ios.nix
     ../../modules/nixos/tailscale.nix
     ../../modules/nixos/sops.nix
     ./networking.nix
-    ./system.nix
+    ./boot.nix
     ./desktop.nix
     ./home-manager.nix
   ];

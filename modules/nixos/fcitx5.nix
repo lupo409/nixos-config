@@ -1,5 +1,6 @@
 { pkgs, ... }:
 let
+  fluentFcitx5ThemeName = "FluentDark-solid";
   fluentFcitx5Theme = pkgs.stdenvNoCC.mkDerivation {
     pname = "fluent-fcitx5-theme";
     version = "2025-01-06";
@@ -42,5 +43,14 @@ in
     SDL_IM_MODULE = "fcitx";
     GLFW_IM_MODULE = "fcitx";
     INPUT_METHOD = "fcitx";
+    FCITX5_THEME = fluentFcitx5ThemeName;
   };
+
+  # Create fcitx5 configuration with theme
+  environment.etc."xdg/fcitx5/conf/classicui.conf".text = ''
+    [General]
+    Theme=${fluentFcitx5ThemeName}
+    UseDarkTheme=True
+    UseAccentColor=True
+  '';
 }
