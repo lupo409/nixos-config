@@ -382,6 +382,14 @@ in
   };
 
   xdg.desktopEntries = {
+    discord = {
+      name = "Discord";
+      comment = "All-in-one voice and text chat";
+      exec = "${pkgs.discord}/bin/Discord";
+      icon = "discord";
+      terminal = false;
+      categories = [ "Network" "InstantMessaging" ];
+    };
     scyrox = {
       name = "Scyrox";
       comment = "Scyrox web app";
