@@ -400,7 +400,7 @@ in
     };
   };
 
-  xdg.configFile."ghostty/config" = {
+  home.file.".config/ghostty/config" = {
     text = ''
       font-family = "HackGen Console NF"
       font-size = 12
@@ -412,6 +412,7 @@ in
       window-padding-y = 8
       confirm-close-surface = false
       app-notifications = "no-clipboard-copy,no-config-reload"
+      tab-bar = "hide"
     '';
     force = true;
   };
