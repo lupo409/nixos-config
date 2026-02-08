@@ -1,20 +1,12 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 {
   sops.secrets."network/ap0_psk" = { };
-  sops.templates.networkmanager_env = {
-    path = "/run/secrets/network-manager.env";
-    owner = "root";
-    group = "root";
-    mode = "0400";
-    content = ''
-      AP0_PSK=${config.sops.placeholder."network/ap0_psk"}
-    '';
-  };
 
   hardware.wirelessRegulatoryDatabase = true;
 
   networking = {
     usePredictableInterfaceNames = false;
+    wireless.enable = lib.mkForce false;
 
     firewall = {
       trustedInterfaces = [ "wlan0" ];
@@ -32,13 +24,9 @@
 
     networkmanager = {
       enable = true;
-      wifi = {
-        backend = "wpa_supplicant";
-        scanRandMacAddress = false;
-        macAddress = "permanent";
-      };
+      unmanaged = [ "wlan0" ];
+      wifi.scanRandMacAddress = false;
       ensureProfiles = {
-        environmentFiles = [ config.sops.templates.networkmanager_env.path ];
         profiles = {
           eth0 = {
             connection = {
@@ -54,38 +42,46 @@
               method = "auto";
             };
           };
-          ap0 = {
-            connection = {
-              id = "ap0";
-              type = "802-11-wireless";
-              interfaceName = "wlan0";
-              autoconnect = true;
-            };
-            wifi = {
-              mode = "ap";
-              ssid = "TPLink-8732";
-              band = "a";
-              channel = 36;
-              powersave = 2;
-            };
-            wifiSecurity = {
-              keyMgmt = "wpa-psk";
-              psk = "$AP0_PSK";
-              proto = "rsn";
-              pairwise = "ccmp";
-              group = "ccmp";
-            };
-            ipv4 = {
-              method = "shared";
-            };
-            ipv6 = {
-              method = "ignore";
-            };
-          };
         };
       };
     };
 
+    interfaces.wlan0 = {
+      ipv4.addresses = [{
+        address = "10.42.0.1";
+        prefixLength = 24;
+      }];
+    };
+  };
+
+  services.hostapd = {
+    enable = true;
+    radios.wlan0 = {
+      band = "5g";
+      channel = 36;
+      countryCode = "JP";
+      wifi4.enable = true;
+      wifi5.enable = true;
+      networks.wlan0 = {
+        ssid = "TPLink-8732";
+        authentication = {
+          mode = "wpa2-sha256";
+          wpaPasswordFile = config.sops.secrets."network/ap0_psk".path;
+        };
+      };
+    };
+  };
+
+  services.dnsmasq = {
+    enable = true;
+    settings = {
+      interface = "wlan0";
+      bind-interfaces = true;
+      dhcp-range = "10.42.0.10,10.42.0.254,3600";
+      dhcp-option = [ "3,10.42.0.1" "6,10.42.0.1" ];
+      server = [ "8.8.8.8" ];
+      listen-address = "10.42.0.1";
+    };
   };
 
   systemd.services."NetworkManager-wait-online".enable = false;
