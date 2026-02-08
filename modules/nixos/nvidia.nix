@@ -14,9 +14,15 @@
       enable = true;
       finegrained = false;
     };
+    forceFullCompositionPipeline = true;
   };
 
   boot.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
   boot.blacklistedKernelModules = [ "nouveau" ];
   services.xserver.videoDrivers = [ "nvidia" ];
+
+  # Disable VRR to prevent refresh rate switching issues
+  environment.variables = {
+    __GL_VRR_ALLOWED = "0";
+  };
 }

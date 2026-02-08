@@ -18,7 +18,16 @@
 
     firewall = {
       trustedInterfaces = [ "wlan0" ];
-      allowedUDPPorts = [ 53 67 68 ];
+      extraCommands = ''
+        iptables -I INPUT -i eth0 -p icmp --icmp-type echo-request -j DROP
+      '';
+      extraStopCommands = ''
+        iptables -D INPUT -i eth0 -p icmp --icmp-type echo-request -j DROP || true
+      '';
+      interfaces.wlan0 = {
+        allowedTCPPorts = [ 53 ];
+        allowedUDPPorts = [ 53 67 68 ];
+      };
     };
 
     networkmanager = {
@@ -31,6 +40,20 @@
       ensureProfiles = {
         environmentFiles = [ config.sops.templates.networkmanager_env.path ];
         profiles = {
+          eth0 = {
+            connection = {
+              id = "eth0";
+              type = "ethernet";
+              interface-name = "eth0";
+              autoconnect = true;
+            };
+            ipv4 = {
+              method = "auto";
+            };
+            ipv6 = {
+              method = "auto";
+            };
+          };
           ap0 = {
             connection = {
               id = "ap0";
@@ -42,7 +65,7 @@
               mode = "ap";
               ssid = "TPLink-8732";
               band = "a";
-              channel = 36;
+              channel = 5;
               powersave = 2;
             };
             wifi-security = {

@@ -6,6 +6,10 @@
 
   xdg.enable = true;
 
+  home.sessionVariables = {
+    QS_ICON_THEME = "Papirus-Dark";
+  };
+
   gtk = {
     enable = true;
     theme = {

@@ -40,6 +40,9 @@ let
 in
 {
   home.packages = with pkgs; [
+    brightnessctl
+    lm_sensors
+    fancontrol-gui
     vesktop
     bitwarden-desktop
     obs-studio

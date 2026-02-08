@@ -16,9 +16,11 @@
     ../../modules/nixos/ios.nix
     ../../modules/nixos/tailscale.nix
     ../../modules/nixos/sops.nix
+    ../../modules/nixos/hardware-monitoring.nix
     ./networking.nix
     ./boot.nix
     ./desktop.nix
+    ./server.nix
     ./home-manager.nix
   ];
 

@@ -1,4 +1,9 @@
 binds {
     Mod+V hotkey-overlay-title="Clipboard: Toggle" { spawn "dms" "ipc" "call" "clipboard" "toggle"; }
     Mod+Space hotkey-overlay-title="App Launcher: Toggle" { spawn "dms" "ipc" "call" "spotlight" "toggle"; }
+    Mod+Tab hotkey-overlay-title="Alt+Tab: Window Switcher" { spawn "dms" "ipc" "call" "alttab" "toggle"; }
+    Mod+Shift+C hotkey-overlay-title="Control Center: Toggle" { spawn "dms" "ipc" "call" "controlcenter" "toggle"; }
+    Mod+Shift+N hotkey-overlay-title="Notification Center: Toggle" { spawn "dms" "ipc" "call" "notifications" "toggle"; }
+    Mod+Shift+M hotkey-overlay-title="Power Menu: Toggle" { spawn "dms" "ipc" "call" "powermenu" "toggle"; }
+    Mod+B hotkey-overlay-title="Bar: Toggle" { spawn "dms" "ipc" "call" "bar" "toggle"; }
 }
